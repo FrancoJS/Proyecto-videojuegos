@@ -38,7 +38,7 @@ public class Playermovement : MonoBehaviour
         if (inputMag > 0f) desiredDir.Normalize();
 
         // Velocidad objetivo (con suavizado de giro)
-        Vector3 currentFlat = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+        Vector3 currentFlat = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         Vector3 targetFlat = desiredDir * (maxSpeed * inputMag);
 
         // Elegimos tasa de cambio (acelera si hay input, desacelera si no)
@@ -48,6 +48,6 @@ public class Playermovement : MonoBehaviour
         Vector3 smoothTarget = Vector3.SmoothDamp(currentFlat, targetFlat, ref velSmoothDamp, turnSmooth, Mathf.Infinity, Time.fixedDeltaTime);
         Vector3 newFlat = Vector3.MoveTowards(currentFlat, smoothTarget, rate * Time.fixedDeltaTime);
 
-        rb.linearVelocity = new Vector3(newFlat.x, rb.linearVelocity.y, newFlat.z);
+        rb.velocity = new Vector3(newFlat.x, rb.velocity.y, newFlat.z);
     }
 }
