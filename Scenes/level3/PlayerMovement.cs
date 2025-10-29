@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 7f;
+    public float moveSpeed = 8f;
 
     [Header("Looking")]
     public float rotationSpeed = 20f;    // qué tan rápido mira hacia el mouse
