@@ -1,9 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 8f;
+    public float moveSpeed = 20f;
 
     [Header("Looking")]
     public float rotationSpeed = 20f;    // qué tan rápido mira hacia el mouse
@@ -24,13 +26,15 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        // Recomendado: en el Rigidbody marcar Freeze Rotation X/Z desde el Inspector
+        // Recomendado: bloquear rotaciones físicas y mejorar colisiones
         rb.freezeRotation = true;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
     void Update()
     {
-        // 1) Mirar al mouse (igual que antes)
+        // 1) Mirar al mouse
         AimTowardsMouse();
 
         // 2) STRAFE: WASD en ejes de la cámara (NO en transform del jugador)
@@ -44,34 +48,23 @@ public class PlayerMovement : MonoBehaviour
 
         if (cam != null)
         {
-            // 1) Calcular camRight proyectado a XZ (si sale casi 0 usamos Vector3.right)
-            camRight = cam.transform.right;
-            camRight.y = 0f;
+            // right proyectado a XZ
+            camRight = cam.transform.right; camRight.y = 0f;
             if (camRight.sqrMagnitude > 0.0001f) camRight.Normalize();
             else camRight = Vector3.right;
 
-            // 2) Intentar proyectar forward a XZ. Si la proyección es casi cero (cam top-down),
-            //    reconstruimos forward usando únicamente el yaw (rotación Y) de la cámara.
-            camFwd = cam.transform.forward;
-            camFwd.y = 0f;
-
+            // forward proyectado a XZ con fallback por yaw
+            camFwd = cam.transform.forward; camFwd.y = 0f;
             if (camFwd.sqrMagnitude > 0.0001f)
             {
                 camFwd.Normalize();
             }
             else
             {
-                // fallback: construir forward desde la rotación Y (yaw)
                 float yaw = cam.transform.eulerAngles.y;
                 camFwd = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
                 camFwd.Normalize();
             }
-        }
-        else
-        {
-            // si no hay cámara marcada como MainCamera, usa ejes del mundo
-            camFwd = Vector3.forward;
-            camRight = Vector3.right;
         }
 
         // Movimiento en plano XZ alineado a la cámara (o mundo si no hay cámara)
@@ -82,8 +75,32 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        // mover con física para evitar tunneling
-        rb.MovePosition(rb.position + moveInputWorld * moveSpeed * Time.fixedDeltaTime);
+        Vector3 delta = moveInputWorld * moveSpeed * Time.fixedDeltaTime;
+        if (delta.sqrMagnitude < 1e-8f)
+            return;
+
+        // Barrido para evitar atravesar paredes y permitir "slide"
+        float skin = 0.02f; // margen para no pegarse
+        if (rb.SweepTest(delta.normalized, out RaycastHit hit, delta.magnitude + skin, QueryTriggerInteraction.Ignore))
+
+        {
+            // Quitar componente hacia la pared y deslizarse
+            Vector3 alongWall = Vector3.ProjectOnPlane(delta, hit.normal);
+
+            // Segundo barrido para el slide (más robusto)
+            if (alongWall.sqrMagnitude > 1e-8f &&
+                rb.SweepTest(alongWall.normalized, out RaycastHit hit2, alongWall.magnitude + skin))
+            {
+                alongWall = alongWall.normalized * Mathf.Max(0f, hit2.distance - skin);
+            }
+
+            rb.MovePosition(rb.position + alongWall);
+        }
+        else
+        {
+            // Libre: mover normal
+            rb.MovePosition(rb.position + delta);
+        }
     }
 
     private void AimTowardsMouse()
@@ -116,5 +133,21 @@ public class PlayerMovement : MonoBehaviour
                 rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRot, rotationSpeed * Time.deltaTime));
             }
         }
+    }
+    void OnTriggerEnter(Collider other)
+    {
+        // Tus enemigos tienen IsTrigger ON y Tag = Enemy
+        if (other.CompareTag("Enemy") ||
+            (other.attachedRigidbody && other.attachedRigidbody.CompareTag("Enemy")))
+        {
+            RestartLevel();
+        }
+    }
+
+    void RestartLevel()
+    {
+        // reinicia la escena actual
+        Scene active = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(active.buildIndex);
     }
 }
