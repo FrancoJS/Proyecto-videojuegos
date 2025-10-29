@@ -22,8 +22,8 @@ namespace AltCamera
 
         [Header("Bounds (map limits) - define el rectángulo del mapa en XZ")]
         public bool enableBounds = true;
-        public Vector2 mapMinXZ = new Vector2(-5f, -5f); // (minX, minZ)
-        public Vector2 mapMaxXZ = new Vector2(5f, 5f);   // (maxX, maxZ)
+        public Vector2 mapMinXZ = new Vector2(-50f, -50f); // (minX, minZ)
+        public Vector2 mapMaxXZ = new Vector2(50f, 50f);   // (maxX, maxZ)
 
         [Header("Camera Settings")]
         public bool forceTopDownRotation = true;

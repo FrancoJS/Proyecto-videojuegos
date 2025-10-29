@@ -17,7 +17,15 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true; // deja libre solo el eje Y (en Constraints marca Freeze X/Z)
+        if (rb == null)
+        {
+            Debug.LogError("PlayerMovement: no se encontró Rigidbody en el jugador.");
+            enabled = false;
+            return;
+        }
+
+        // Recomendado: en el Rigidbody marcar Freeze Rotation X/Z desde el Inspector
+        rb.freezeRotation = true;
     }
 
     void Update()
@@ -26,8 +34,8 @@ public class PlayerMovement : MonoBehaviour
         AimTowardsMouse();
 
         // 2) STRAFE: WASD en ejes de la cámara (NO en transform del jugador)
-        float h = (Input.GetKey(KeyCode.A) ? -1f : 0f) + (Input.GetKey(KeyCode.D) ?  1f : 0f);
-        float v = (Input.GetKey(KeyCode.S) ? -1f : 0f) + (Input.GetKey(KeyCode.W) ?  1f : 0f);
+        float h = (Input.GetKey(KeyCode.A) ? -1f : 0f) + (Input.GetKey(KeyCode.D) ? 1f : 0f);
+        float v = (Input.GetKey(KeyCode.S) ? -1f : 0f) + (Input.GetKey(KeyCode.W) ? 1f : 0f);
 
         // Usa la cámara para definir "arriba" y "derecha" del movimiento
         Camera cam = Camera.main;
@@ -36,8 +44,34 @@ public class PlayerMovement : MonoBehaviour
 
         if (cam != null)
         {
-            camFwd  = cam.transform.forward;  camFwd.y  = 0f;  camFwd.Normalize();
-            camRight= cam.transform.right;    camRight.y= 0f;  camRight.Normalize();
+            // 1) Calcular camRight proyectado a XZ (si sale casi 0 usamos Vector3.right)
+            camRight = cam.transform.right;
+            camRight.y = 0f;
+            if (camRight.sqrMagnitude > 0.0001f) camRight.Normalize();
+            else camRight = Vector3.right;
+
+            // 2) Intentar proyectar forward a XZ. Si la proyección es casi cero (cam top-down),
+            //    reconstruimos forward usando únicamente el yaw (rotación Y) de la cámara.
+            camFwd = cam.transform.forward;
+            camFwd.y = 0f;
+
+            if (camFwd.sqrMagnitude > 0.0001f)
+            {
+                camFwd.Normalize();
+            }
+            else
+            {
+                // fallback: construir forward desde la rotación Y (yaw)
+                float yaw = cam.transform.eulerAngles.y;
+                camFwd = Quaternion.Euler(0f, yaw, 0f) * Vector3.forward;
+                camFwd.Normalize();
+            }
+        }
+        else
+        {
+            // si no hay cámara marcada como MainCamera, usa ejes del mundo
+            camFwd = Vector3.forward;
+            camRight = Vector3.right;
         }
 
         // Movimiento en plano XZ alineado a la cámara (o mundo si no hay cámara)
@@ -48,6 +82,7 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        // mover con física para evitar tunneling
         rb.MovePosition(rb.position + moveInputWorld * moveSpeed * Time.fixedDeltaTime);
     }
 
