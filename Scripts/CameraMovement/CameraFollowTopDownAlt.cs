@@ -9,7 +9,8 @@ namespace AltCamera
         public Transform followTarget;
 
         [Header("Follow")]
-        public Vector3 followOffset = new Vector3(0f, 18f, 0f);
+        // offset por defecto colocado arriba y algo "hacia atrás" para vista 3D/diagonal
+        public Vector3 followOffset = new Vector3(0f, 18f, -12f);
         public float followSmoothTime = 0.12f;
         Vector3 followVelocity = Vector3.zero;
 
@@ -26,8 +27,8 @@ namespace AltCamera
         public Vector2 mapMaxXZ = new Vector2(50f, 50f);   // (maxX, maxZ)
 
         [Header("Camera Settings")]
-        public bool forceTopDownRotation = true;
-        public bool useOrthographic = true;
+        public bool forceTopDownRotation = false; // ahora por defecto NO forzar 90°
+        public bool useOrthographic = false;      // por defecto perspectiva (más 3D)
         public float orthoSizeNormal = 12f;
         public float orthoSizeZoomed = 18f;
         public float zoomLerpSpeed = 8f;
@@ -35,6 +36,12 @@ namespace AltCamera
         [Header("Perspective (si no es ortográfica)")]
         public float perspFOV = 60f;
         public float perspFOVZoomed = 75f;
+
+        [Header("Tilt / Orientation")]
+        [Tooltip("Euler angles que definan la inclinación '3D' de la cámara. Ej: X=50, Y=0.")]
+        public Vector3 cameraEuler = new Vector3(50f, 0f, 0f);
+        [Tooltip("Altura (Y) del plano suelo donde se proyectan las esquinas para el clamp.")]
+        public float groundPlaneY = 0f;
 
         [Header("Input")]
         public KeyCode zoomHoldKey = KeyCode.LeftShift;
@@ -57,10 +64,15 @@ namespace AltCamera
             else if (_cameraRef != null)
             {
                 _cameraRef.fieldOfView = perspFOV;
+                _cameraRef.orthographic = false;
             }
 
+            // Si quieres top-down puro mantén forceTopDownRotation = true,
+            // pero para vista 3D diagonal lo dejamos en false y aplicamos cameraEuler.
             if (forceTopDownRotation)
                 transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            else
+                transform.rotation = Quaternion.Euler(cameraEuler);
 
             if (followTarget != null)
             {
@@ -112,43 +124,34 @@ namespace AltCamera
             {
                 if (_cameraRef.orthographic)
                 {
+                    // extents ortográficos (igual que antes)
                     float vertExtent = _cameraRef.orthographicSize;
                     float horizExtent = vertExtent * _cameraRef.aspect;
 
-                    // limites centrales permitidos (para que los bordes no salgan)
                     float minCenterX = mapMinXZ.x + horizExtent;
                     float maxCenterX = mapMaxXZ.x - horizExtent;
                     float minCenterZ = mapMinXZ.y + vertExtent;
                     float maxCenterZ = mapMaxXZ.y - vertExtent;
 
-                    // Si el mapa es más pequeño que la vista, centrar en el mapa
                     if (minCenterX > maxCenterX)
-                    {
-                        float centerX = (mapMinXZ.x + mapMaxXZ.x) * 0.5f;
-                        smoothed.x = centerX;
-                    }
+                        smoothed.x = (mapMinXZ.x + mapMaxXZ.x) * 0.5f;
                     else
-                    {
                         smoothed.x = Mathf.Clamp(smoothed.x, minCenterX, maxCenterX);
-                    }
 
                     if (minCenterZ > maxCenterZ)
-                    {
-                        float centerZ = (mapMinXZ.y + mapMaxXZ.y) * 0.5f;
-                        smoothed.z = centerZ;
-                    }
+                        smoothed.z = (mapMinXZ.y + mapMaxXZ.y) * 0.5f;
                     else
-                    {
                         smoothed.z = Mathf.Clamp(smoothed.z, minCenterZ, maxCenterZ);
-                    }
                 }
                 else
                 {
-                    // Para perspectiva, usamos una aproximación usando el ortho-equivalente vertical basado en FOV y distancia.
-                    // Esto es conservador: evita que la cámara salga del mapa en la mayoría de casos top-down.
-                    float camDistance = Mathf.Abs(smoothed.y - followOffset.y); // aproximación simple
+                    // Para perspectiva inclinada: calcular la "altura" desde la cámara al plano suelo (groundPlaneY)
+                    float camHeight = smoothed.y - groundPlaneY;
+                    if (camHeight < 0.01f) camHeight = Mathf.Abs(smoothed.y - groundPlaneY) + 0.01f;
+
+                    // mitad del FOV vertical en radianes
                     float halfFOV = (_cameraRef.fieldOfView * 0.5f) * Mathf.Deg2Rad;
-                    float vertExtent = camDistance * Mathf.Tan(halfFOV);
+                    float vertExtent = camHeight * Mathf.Tan(halfFOV);
                     float horizExtent = vertExtent * _cameraRef.aspect;
 
                     float minCenterX = mapMinXZ.x + horizExtent;
