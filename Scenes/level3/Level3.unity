@@ -3271,6 +3271,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &818847710
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -3500,6 +3502,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &950867966
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4305,6 +4309,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &1130454967
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4585,6 +4591,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &1209183265
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4842,6 +4850,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &1314368776
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -4886,6 +4896,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   starsText: {fileID: 36823969}
   winPanel: {fileID: 1094869052}
+  winText: {fileID: 0}
   nextButton: {fileID: 1256422643}
   nextSceneName: 
 --- !u!4 &1338268226
@@ -5493,6 +5504,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &1441248446
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5712,6 +5725,7 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  delayReinicio: 1
 --- !u!1 &1566788124 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2809303206482566689, guid: 5daff121de6826f4c8029fda5e22b206, type: 3}
@@ -6389,6 +6403,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &1686082798
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6504,38 +6520,22 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7192996722216134161, guid: 17c4216c3d486774d956c22caa4b0756, type: 3}
   m_PrefabInstance: {fileID: 7192996723411583224}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1700184092
+--- !u!114 &1700184096
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1700184091}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a73f8dc5cfa8c5447b6b8f7c25eadd6a, type: 3}
+  m_Script: {fileID: 11500000, guid: e4e8be36646fb9340b0f888bf34989da, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  followTarget: {fileID: 0}
-  followOffset: {x: 0, y: 18, z: -6}
-  followSmoothTime: 0.12
-  followTargetRb3D: {fileID: 0}
-  followTargetRb2D: {fileID: 0}
-  useRb2D: 0
-  lookaheadFactor: 0.35
-  lookaheadMax: 2
-  enableBounds: 1
-  mapMinXZ: {x: -50, y: -50}
-  mapMaxXZ: {x: 50, y: 50}
-  cameraEuler: {x: 45, y: 30, z: 0}
-  groundPlaneY: 0
-  useOrthographic: 1
-  orthoSizeNormal: 12
-  orthoSizeZoomed: 18
-  zoomLerpSpeed: 8
-  perspFOV: 60
-  perspFOVZoomed: 75
-  zoomHoldKey: 304
+  player: {fileID: 1553739660}
+  playerHeight: 1
+  distanceBack: 30
+  smoothTime: 0.3
 --- !u!4 &1701870195 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3294232276668384411, guid: 5daff121de6826f4c8029fda5e22b206, type: 3}
@@ -6683,6 +6683,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77c482c7f7845f740bf2ded0c2179212, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  PickupStar: {fileID: 0}
+  volumen: 1
 --- !u!65 &1766891255
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -8185,5 +8187,6 @@ PrefabInstance:
       propertyPath: useOrthographic
       value: 1
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7192996722216134165, guid: 17c4216c3d486774d956c22caa4b0756, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 17c4216c3d486774d956c22caa4b0756, type: 3}
