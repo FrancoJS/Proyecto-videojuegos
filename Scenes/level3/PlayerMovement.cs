@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections; // para corrutinas
 
 [RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class PlayerMovement : MonoBehaviour
@@ -12,6 +13,10 @@ public class PlayerMovement : MonoBehaviour
     public bool usePhysicsRaycast = false;
     public float planeHeight = 0f;
     public LayerMask groundMask = ~0;
+
+    [Header("Muerte")]
+    public float delayReinicio = 1f; // ⏱️ Cambiado a 1 segundo
+    private bool muriendo = false;
 
     private Rigidbody rb;
     private Vector3 moveInputWorld;
@@ -26,7 +31,6 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        // Recomendado: bloquear rotaciones físicas y mejorar colisiones
         rb.freezeRotation = true;
         rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         rb.interpolation = RigidbodyInterpolation.Interpolate;
@@ -34,26 +38,23 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // 1) Mirar al mouse
+        if (muriendo) return;
+
         AimTowardsMouse();
 
-        // 2) STRAFE: WASD en ejes de la cámara (NO en transform del jugador)
         float h = (Input.GetKey(KeyCode.A) ? -1f : 0f) + (Input.GetKey(KeyCode.D) ? 1f : 0f);
         float v = (Input.GetKey(KeyCode.S) ? -1f : 0f) + (Input.GetKey(KeyCode.W) ? 1f : 0f);
 
-        // Usa la cámara para definir "arriba" y "derecha" del movimiento
         Camera cam = Camera.main;
         Vector3 camFwd = Vector3.forward;
         Vector3 camRight = Vector3.right;
 
         if (cam != null)
         {
-            // right proyectado a XZ
             camRight = cam.transform.right; camRight.y = 0f;
             if (camRight.sqrMagnitude > 0.0001f) camRight.Normalize();
             else camRight = Vector3.right;
 
-            // forward proyectado a XZ con fallback por yaw
             camFwd = cam.transform.forward; camFwd.y = 0f;
             if (camFwd.sqrMagnitude > 0.0001f)
             {
@@ -67,7 +68,6 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        // Movimiento en plano XZ alineado a la cámara (o mundo si no hay cámara)
         moveInputWorld = (camRight * h + camFwd * v);
         if (moveInputWorld.sqrMagnitude > 1e-6f)
             moveInputWorld.Normalize();
@@ -75,30 +75,25 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (muriendo) return;
+
         Vector3 delta = moveInputWorld * moveSpeed * Time.fixedDeltaTime;
         if (delta.sqrMagnitude < 1e-8f)
             return;
 
-        // Barrido para evitar atravesar paredes y permitir "slide"
-        float skin = 0.02f; // margen para no pegarse
+        float skin = 0.02f;
         if (rb.SweepTest(delta.normalized, out RaycastHit hit, delta.magnitude + skin, QueryTriggerInteraction.Ignore))
-
         {
-            // Quitar componente hacia la pared y deslizarse
             Vector3 alongWall = Vector3.ProjectOnPlane(delta, hit.normal);
-
-            // Segundo barrido para el slide (más robusto)
             if (alongWall.sqrMagnitude > 1e-8f &&
                 rb.SweepTest(alongWall.normalized, out RaycastHit hit2, alongWall.magnitude + skin))
             {
                 alongWall = alongWall.normalized * Mathf.Max(0f, hit2.distance - skin);
             }
-
             rb.MovePosition(rb.position + alongWall);
         }
         else
         {
-            // Libre: mover normal
             rb.MovePosition(rb.position + delta);
         }
     }
@@ -134,19 +129,25 @@ public class PlayerMovement : MonoBehaviour
             }
         }
     }
+
     void OnTriggerEnter(Collider other)
     {
-        // Tus enemigos tienen IsTrigger ON y Tag = Enemy
+        if (muriendo) return;
+
         if (other.CompareTag("Enemy") ||
             (other.attachedRigidbody && other.attachedRigidbody.CompareTag("Enemy")))
         {
-            RestartLevel();
+            StartCoroutine(EsperarYReiniciar());
         }
     }
 
-    void RestartLevel()
+    IEnumerator EsperarYReiniciar()
     {
-        // reinicia la escena actual
+        muriendo = true;
+
+        // Espera 1 segundo antes de reiniciar
+        yield return new WaitForSeconds(delayReinicio);
+
         Scene active = SceneManager.GetActiveScene();
         SceneManager.LoadScene(active.buildIndex);
     }
