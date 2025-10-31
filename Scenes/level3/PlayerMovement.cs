@@ -15,7 +15,7 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask groundMask = ~0;
 
     [Header("Muerte")]
-    public float delayReinicio = 1f; // ⏱️ Cambiado a 1 segundo
+    public float delayReinicio = 1f; 
     private bool muriendo = false;
 
     private Rigidbody rb;

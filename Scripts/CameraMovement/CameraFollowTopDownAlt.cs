@@ -9,7 +9,7 @@ namespace AltCamera
         public Transform followTarget;
 
         [Header("Follow")]
-        // offset por defecto colocado arriba y algo "hacia atrás" para vista 3D/diagonal
+
         public Vector3 followOffset = new Vector3(0f, 18f, -12f);
         public float followSmoothTime = 0.12f;
         Vector3 followVelocity = Vector3.zero;
@@ -21,24 +21,24 @@ namespace AltCamera
         public float lookaheadFactor = 0.35f;
         public float lookaheadMax = 2f;
 
-        [Header("Bounds (map limits) - define el rectángulo del mapa en XZ")]
+        [Header("Bounds (map limits) - define el rectï¿½ngulo del mapa en XZ")]
         public bool enableBounds = true;
         public Vector2 mapMinXZ = new Vector2(-50f, -50f); // (minX, minZ)
         public Vector2 mapMaxXZ = new Vector2(50f, 50f);   // (maxX, maxZ)
 
         [Header("Camera Settings")]
-        public bool forceTopDownRotation = false; // ahora por defecto NO forzar 90°
-        public bool useOrthographic = false;      // por defecto perspectiva (más 3D)
+        public bool forceTopDownRotation = false; 
+        public bool useOrthographic = false;      
         public float orthoSizeNormal = 12f;
         public float orthoSizeZoomed = 18f;
         public float zoomLerpSpeed = 8f;
 
-        [Header("Perspective (si no es ortográfica)")]
+        [Header("Perspective (si no es ortogrï¿½fica)")]
         public float perspFOV = 60f;
         public float perspFOVZoomed = 75f;
 
         [Header("Tilt / Orientation")]
-        [Tooltip("Euler angles que definan la inclinación '3D' de la cámara. Ej: X=50, Y=0.")]
+        [Tooltip("Euler angles que definan la inclinaciï¿½n '3D' de la cï¿½mara. Ej: X=50, Y=0.")]
         public Vector3 cameraEuler = new Vector3(50f, 0f, 0f);
         [Tooltip("Altura (Y) del plano suelo donde se proyectan las esquinas para el clamp.")]
         public float groundPlaneY = 0f;
@@ -67,8 +67,7 @@ namespace AltCamera
                 _cameraRef.orthographic = false;
             }
 
-            // Si quieres top-down puro mantén forceTopDownRotation = true,
-            // pero para vista 3D diagonal lo dejamos en false y aplicamos cameraEuler.
+
             if (forceTopDownRotation)
                 transform.rotation = Quaternion.Euler(90f, 0f, 0f);
             else
@@ -124,7 +123,7 @@ namespace AltCamera
             {
                 if (_cameraRef.orthographic)
                 {
-                    // extents ortográficos (igual que antes)
+                    // extents ortogrï¿½ficos (igual que antes)
                     float vertExtent = _cameraRef.orthographicSize;
                     float horizExtent = vertExtent * _cameraRef.aspect;
 
@@ -145,7 +144,7 @@ namespace AltCamera
                 }
                 else
                 {
-                    // Para perspectiva inclinada: calcular la "altura" desde la cámara al plano suelo (groundPlaneY)
+
                     float camHeight = smoothed.y - groundPlaneY;
                     if (camHeight < 0.01f) camHeight = Mathf.Abs(smoothed.y - groundPlaneY) + 0.01f;
 

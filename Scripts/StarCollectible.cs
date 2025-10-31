@@ -4,18 +4,18 @@ using UnityEngine;
 public class StarCollectible : MonoBehaviour
 {
     [Header("Sonido al recolectar")]
-    public AudioClip PickupStar;  // 🎵 Asigna el clip en el Inspector
+    public AudioClip PickupStar;  
     [Range(0f, 1f)] public float volumen = 1f;
 
     void Reset()
     {
         var col = GetComponent<Collider>();
-        col.isTrigger = true; // aseguramos que sea trigger
+        col.isTrigger = true; 
     }
 
     void OnTriggerEnter(Collider other)
     {
-        // detecta jugador incluso si el collider viene de un hijo
+        
         bool isPlayer = other.CompareTag("Player") ||
                         (other.attachedRigidbody && other.attachedRigidbody.CompareTag("Player"));
 
@@ -23,16 +23,13 @@ public class StarCollectible : MonoBehaviour
 
         Debug.Log("⭐ Star tocada por: " + other.name);
 
-        // 🔊 Reproducir sonido independiente (NO se corta aunque se destruya)
         if (PickupStar)
         {
             AudioSource.PlayClipAtPoint(PickupStar, transform.position, volumen);
         }
 
-        // 🟡 Notificar al GameManager
         GameManager.Instance?.CollectStar();
 
-        // 💥 Destruir la estrella
         Destroy(gameObject);
     }
 }

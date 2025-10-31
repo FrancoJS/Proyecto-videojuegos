@@ -8,14 +8,14 @@ public class Playermovement : MonoBehaviour
     public InputActionReference moveAction;
 
     [Header("Movimiento suave")]
-    public Transform orientation;     // arrastra la cámara si quieres que W sea donde mira
-    public float maxSpeed = 6f;       // velocidad máxima
-    public float acceleration = 12f;  // qué tan rápido acelera
-    public float deceleration = 16f;  // qué tan rápido frena
-    public float turnSmooth = 0.08f;  // suaviza cambios de dirección (0 = inmediato)
+    public Transform orientation;     
+    public float maxSpeed = 6f;       
+    public float acceleration = 12f;  
+    public float deceleration = 16f; 
+    public float turnSmooth = 0.08f;  
 
     private Rigidbody rb;
-    private Vector3 velSmoothDamp;    // buffer interno para SmoothDamp
+    private Vector3 velSmoothDamp;    
 
     void Awake()
     {

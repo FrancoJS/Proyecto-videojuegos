@@ -8,11 +8,13 @@ public class MusicManager : MonoBehaviour
     public static MusicManager Instance;
 
     [Header("Canciones por nivel (3 por cada uno)")]
+    public List<AudioClip> level0Songs;
     public List<AudioClip> level1Songs;
     public List<AudioClip> level2Songs;
     public List<AudioClip> level3Songs;
 
     [Header("Sonidos al completar nivel")]
+    public AudioClip level0Complete;
     public AudioClip level1Complete;
     public AudioClip level2Complete;
     public AudioClip level3Complete;
@@ -24,18 +26,17 @@ public class MusicManager : MonoBehaviour
     [Header("Debug")]
     public bool verboseLogs = true;
 
-    AudioSource musicSource;   // Música
-    AudioSource sfxSource;     // SFX “nivel completado”
+    AudioSource musicSource;
+    AudioSource sfxSource;
     int songIndex = 0;
 
-    List<AudioClip> activePlaylist; // la que se está usando
-    List<AudioClip> lastPlaylist;   // snapshot de la última aplicada
+    List<AudioClip> activePlaylist;
+    List<AudioClip> lastPlaylist;
     Coroutine playlistRoutine;
     int lastSceneIndex = -1;
 
     void Awake()
     {
-        // Singleton estricto
         if (Instance != null)
         {
             if (verboseLogs) Debug.Log("[MusicManager] Duplicado detectado → destroy.");
@@ -58,9 +59,6 @@ public class MusicManager : MonoBehaviour
         sfxSource.playOnAwake = false;
         sfxSource.spatialBlend = 0f;
         sfxSource.volume = volume;
-
-        // No suscribimos aquí para evitar dobles
-        // SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void OnEnable()
@@ -95,7 +93,7 @@ public class MusicManager : MonoBehaviour
 
     void ApplyPlaylistForScene(int index)
     {
-        var resolved = ResolvePlaylist(index); // obtiene lista candidata (puede ser null)
+        var resolved = ResolvePlaylist(index);
         if (resolved == null || resolved.Count == 0)
         {
             if (verboseLogs) Debug.Log("[MusicManager] Sin playlist para esta escena → stop.");
@@ -106,21 +104,17 @@ public class MusicManager : MonoBehaviour
             return;
         }
 
-        // Si el contenido es igual a lo que ya estaba, no reiniciar ni tocar songIndex
         if (PlaylistsEqualByContent(resolved, lastPlaylist))
         {
             if (verboseLogs) Debug.Log("[MusicManager] Playlist igual por contenido → no reiniciar.");
-            // Asegura que el source siga con volumen correcto
             musicSource.volume = volume;
             return;
         }
 
-        // Cambió la playlist: detén corrutina anterior, aplica nueva y reinicia desde 0
         StopPlaylistRoutine();
 
-        // Clona la lista para que no cambie por referencia luego
         activePlaylist = new List<AudioClip>(resolved);
-        lastPlaylist   = new List<AudioClip>(resolved);
+        lastPlaylist = new List<AudioClip>(resolved);
         songIndex = 0;
 
         if (verboseLogs)
@@ -134,6 +128,7 @@ public class MusicManager : MonoBehaviour
 
     List<AudioClip> ResolvePlaylist(int index)
     {
+        if (index == 0) return level0Songs;
         if (index == 1) return level1Songs;
         if (index == 2) return level2Songs;
         if (index == 3) return level3Songs;
@@ -147,7 +142,6 @@ public class MusicManager : MonoBehaviour
         if (a.Count != b.Count) return false;
         for (int i = 0; i < a.Count; i++)
         {
-            // compara por referencia de clip (lo más confiable)
             if (a[i] != b[i]) return false;
         }
         return true;
@@ -177,7 +171,6 @@ public class MusicManager : MonoBehaviour
                 if (verboseLogs)
                     Debug.Log($"[MusicManager] ▶️ Play: {clip.name} (idx {songIndex})");
 
-                // Espera real a que termine. Si alguien para el audio, salimos del while interno
                 while (musicSource != null && musicSource.isPlaying)
                 {
                     yield return null;
@@ -187,7 +180,6 @@ public class MusicManager : MonoBehaviour
                     Debug.Log($"[MusicManager] ⏹️ Fin clip: {(clip != null ? clip.name : "null")}");
             }
 
-            // Avanza al siguiente
             songIndex = (songIndex + 1) % activePlaylist.Count;
             yield return null;
         }
@@ -196,13 +188,13 @@ public class MusicManager : MonoBehaviour
         playlistRoutine = null;
     }
 
-    // SFX nivel completado
     public float PlayLevelCompleteSound()
     {
         AudioClip clip = null;
         int index = SceneManager.GetActiveScene().buildIndex;
 
-        if (index == 1) clip = level1Complete;
+        if (index == 0) clip = level0Complete;
+        else if (index == 1) clip = level1Complete;
         else if (index == 2) clip = level2Complete;
         else if (index == 3) clip = level3Complete;
 

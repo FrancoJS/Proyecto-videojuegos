@@ -2861,12 +2861,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361df68ef1b36f1428f3b50ede0da55d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  level1Songs:
+  level0Songs:
   - {fileID: 8300000, guid: 10af9ab1540d79a4487a3d0fbe46b351, type: 3}
-  level2Songs:
+  level1Songs:
   - {fileID: 8300000, guid: 5944e92390742c8418845486b94ce3ad, type: 3}
-  level3Songs:
+  level2Songs:
   - {fileID: 8300000, guid: dcecac35c9c4dc34f99fdc6eb9b0331c, type: 3}
+  level3Songs: []
+  level0Complete: {fileID: 0}
   level1Complete: {fileID: 0}
   level2Complete: {fileID: 0}
   level3Complete: {fileID: 0}
